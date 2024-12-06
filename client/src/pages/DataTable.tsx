@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -7,8 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { fetchGithubUsers } from "../lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -51,10 +51,6 @@ export function DataTable() {
     },
   });
 
-  const filteredUsers = data?.filter((user) =>
-    user.login.toLowerCase().includes(search.toLowerCase()),
-  );
-
   const prepareChartData = () => {
     if (!data) return { userTypes: [], followerRanges: [] };
     
@@ -77,6 +73,10 @@ export function DataTable() {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
   const { userTypes, followerRanges } = prepareChartData();
+
+  const filteredUsers = data?.filter((user) =>
+    user.login.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
