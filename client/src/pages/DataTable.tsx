@@ -12,6 +12,7 @@ import { useState } from "react";
 import { fetchGithubUsers } from "../lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import {
   BarChart,
   Bar,
