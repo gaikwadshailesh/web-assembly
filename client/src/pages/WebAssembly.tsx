@@ -14,7 +14,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-declare function factorial(n: number): number;
+// Declare factorial as a property of the window object
+declare global {
+  interface Window {
+    factorial: (n: number) => number;
+  }
+}
 
 export function WebAssembly() {
   const [number, setNumber] = useState("");
@@ -90,7 +95,7 @@ export function WebAssembly() {
     }
 
     const start = performance.now();
-    setResult(factorial(n));
+    setResult(window.factorial(n));
     const wasmTime = performance.now() - start;
 
     const jsStart = performance.now();
