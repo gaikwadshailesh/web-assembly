@@ -48,15 +48,9 @@ export function WebAssembly() {
         document.body.appendChild(script);
         await loadPromise;
         
-        // Wait for Module to be initialized
-        await new Promise(resolve => {
-          const checkInterval = setInterval(() => {
-            if (typeof factorial === 'function') {
-              clearInterval(checkInterval);
-              resolve(true);
-            }
-          }, 100);
-        });
+        // Initialize the WebAssembly module
+        const Module = await (window as any).createModule();
+        window.factorial = Module.cwrap('factorial', 'number', ['number']);
 
         setWasmLoaded(true);
         toast({
