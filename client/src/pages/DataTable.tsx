@@ -148,7 +148,14 @@ export function DataTable() {
       )}
 
       {error ? (
-        <div className="text-red-500">Error loading users</div>
+        <Card className="p-6">
+          <div className="text-destructive space-y-2">
+            <h3 className="font-semibold">Error loading users</h3>
+            <p className="text-sm text-muted-foreground">
+              {error instanceof Error ? error.message : "An unexpected error occurred"}
+            </p>
+          </div>
+        </Card>
       ) : (
         <div className="rounded-md border">
           <Table>
