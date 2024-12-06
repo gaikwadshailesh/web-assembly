@@ -12,6 +12,7 @@ export function VideoChat() {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(true);
   const [peers, setPeers] = useState<string[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const peerVideosRef = useRef<Map<string, HTMLVideoElement>>(new Map());
   const webrtcManagerRef = useRef<WebRTCManager>();
@@ -66,9 +67,23 @@ export function VideoChat() {
           peerVideosRef.current.delete(userId);
         }
       );
-      setIsInRoom(true);
+      setConnectionStatus('connecting');
+      setTimeout(() => {
+        setIsInRoom(true);
+        setConnectionStatus('connected');
+        toast({
+          title: "Connected to room",
+          description: `Successfully joined room: ${roomId}`,
+        });
+      }, 1000);
     } catch (error) {
       console.error("Failed to join room:", error);
+      setConnectionStatus('disconnected');
+      toast({
+        title: "Connection failed",
+        description: error instanceof Error ? error.message : "Failed to join room",
+        variant: "destructive",
+      });
     }
   };
 
@@ -77,6 +92,11 @@ export function VideoChat() {
     setIsInRoom(false);
     setPeers([]);
     peerVideosRef.current.clear();
+    setConnectionStatus('disconnected');
+    toast({
+      title: "Disconnected",
+      description: "Left the video chat room",
+    });
   };
 
   const toggleMute = () => {
@@ -113,7 +133,28 @@ export function VideoChat() {
             onChange={(e) => setRoomId(e.target.value)}
             className="max-w-xs"
           />
-          <Button onClick={joinRoom}>Join Room</Button>
+          <Button 
+            onClick={joinRoom}
+            disabled={connectionStatus === 'connecting'}
+            className="relative"
+          >
+            {connectionStatus === 'connecting' ? (
+              <>
+                <span className="opacity-0">Join Room</span>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
+                </div>
+              </>
+            ) : (
+              'Join Room'
+            )}
+          </Button>
+          {connectionStatus === 'connected' && (
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="text-sm text-muted-foreground">Connected</span>
+            </div>
+          )}
         </div>
       ) : (
         <>
