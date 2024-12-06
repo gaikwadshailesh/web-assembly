@@ -11,6 +11,19 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { fetchGithubUsers } from "../lib/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+} from "recharts";
 
 export function DataTable() {
   const [search, setSearch] = useState("");
@@ -23,6 +36,29 @@ export function DataTable() {
     user.login.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const prepareChartData = () => {
+    if (!data) return { userTypes: [], followerRanges: [] };
+    
+    // Count user types (User vs Organization)
+    const userTypes = [
+      { name: 'Users', value: data.filter(user => !user.type || user.type === 'User').length },
+      { name: 'Organizations', value: data.filter(user => user.type === 'Organization').length }
+    ];
+
+    // Create follower ranges
+    const followerRanges = [
+      { name: '0-100', value: data.filter(user => user.followers >= 0 && user.followers <= 100).length },
+      { name: '101-500', value: data.filter(user => user.followers > 100 && user.followers <= 500).length },
+      { name: '501+', value: data.filter(user => user.followers > 500).length }
+    ];
+
+    return { userTypes, followerRanges };
+  };
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
+  const { userTypes, followerRanges } = prepareChartData();
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -34,6 +70,58 @@ export function DataTable() {
           className="max-w-sm"
         />
       </div>
+
+      {!error && !isLoading && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>User Types Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={userTypes}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {userTypes.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Followers Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={followerRanges}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#8884d8">
+                    {followerRanges.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {error ? (
         <div className="text-red-500">Error loading users</div>

@@ -3,6 +3,8 @@ export interface GithubUser {
   login: string;
   avatar_url: string;
   html_url: string;
+  type: string;
+  followers: number;
 }
 
 export async function fetchGithubUsers(): Promise<GithubUser[]> {
