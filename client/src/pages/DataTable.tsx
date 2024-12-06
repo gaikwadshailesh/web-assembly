@@ -27,11 +27,27 @@ import {
 
 export function DataTable() {
   const [search, setSearch] = useState("");
-  const { data, isLoading, error } = useQuery({
+  const { toast } = useToast();
+  const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ["github-users"],
     queryFn: fetchGithubUsers,
     refetchInterval: 30000, // Refetch every 30 seconds
     refetchOnWindowFocus: true, // Refetch when window regains focus
+    onError: (error) => {
+      toast({
+        title: "Error fetching data",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+    onSuccess: (newData, oldData) => {
+      if (oldData && newData.length !== oldData.length) {
+        toast({
+          title: "Data Updated",
+          description: "New GitHub users data has been loaded",
+        });
+      }
+    },
   });
 
   const filteredUsers = data?.filter((user) =>
@@ -64,7 +80,12 @@ export function DataTable() {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <h2 className="text-3xl font-bold tracking-tight">GitHub Users</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-3xl font-bold tracking-tight">GitHub Users</h2>
+          {isFetching && (
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent" />
+          )}
+        </div>
         <Input
           placeholder="Search users..."
           value={search}
