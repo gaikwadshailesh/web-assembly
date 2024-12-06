@@ -3,6 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 declare function factorial(n: number): number;
 
@@ -11,6 +21,11 @@ export function WebAssembly() {
   const [result, setResult] = useState<number | null>(null);
   const [jsResult, setJsResult] = useState<number | null>(null);
   const [wasmLoaded, setWasmLoaded] = useState(false);
+  const [performanceHistory, setPerformanceHistory] = useState<Array<{
+    input: number;
+    wasmTime: number;
+    jsTime: number;
+  }>>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -43,11 +58,16 @@ export function WebAssembly() {
     setJsResult(jsFactorial);
     const jsTime = performance.now() - jsStart;
 
+    // Update performance history
+    setPerformanceHistory(prev => [...prev, {
+      input: n,
+      wasmTime,
+      jsTime
+    }]);
+
     toast({
       title: "Performance Comparison",
-      description: `WebAssembly: ${wasmTime.toFixed(
-        2,
-      )}ms\nJavaScript: ${jsTime.toFixed(2)}ms`,
+      description: `WebAssembly: ${wasmTime.toFixed(2)}ms\nJavaScript: ${jsTime.toFixed(2)}ms`,
     });
   };
 
@@ -86,6 +106,29 @@ export function WebAssembly() {
           )}
         </CardContent>
       </Card>
+
+      {performanceHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Performance History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={performanceHistory}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="input" label={{ value: 'Input Number', position: 'bottom' }} />
+                  <YAxis label={{ value: 'Time (ms)', angle: -90, position: 'left' }} />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="wasmTime" name="WebAssembly" stroke="#8884d8" />
+                  <Line type="monotone" dataKey="jsTime" name="JavaScript" stroke="#82ca9d" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
