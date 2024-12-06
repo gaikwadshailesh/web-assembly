@@ -32,23 +32,31 @@ export function DataTable() {
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ["github-users"],
     queryFn: fetchGithubUsers,
-    refetchInterval: 30000, // Refetch every 30 seconds
-    refetchOnWindowFocus: true, // Refetch when window regains focus
-    retry: 3,
-    staleTime: 10000, // Consider data stale after 10 seconds
-    onSettled: (newData, error: Error | null, variables, context) => {
-      if (error) {
-        toast({
-          title: "Error fetching data",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else if (context && newData && newData.length !== (context as GithubUser[]).length) {
+    refetchInterval: 15000, // Refetch every 15 seconds
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    retry: (failureCount, error) => {
+      if (error instanceof Error && error.message.includes('rate limit')) {
+        return false; // Don't retry rate limit errors
+      }
+      return failureCount < 3;
+    },
+    staleTime: 5000, // Consider data stale after 5 seconds
+    cacheTime: 60000, // Keep data in cache for 1 minute
+    onSuccess: (newData, _, { previousData }) => {
+      if (previousData && newData.length !== previousData.length) {
         toast({
           title: "Data Updated",
-          description: "New GitHub users data has been loaded",
+          description: `Found ${newData.length} GitHub users`,
         });
       }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error fetching data",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
