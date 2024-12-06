@@ -13,5 +13,14 @@ export function registerRoutes(app: Express) {
     res.json({ status: "ok" });
   });
 
+  // Serve WebAssembly files
+  app.get("/factorial.js", (_req, res) => {
+    res.sendFile("factorial.js", { root: "./wasm" });
+  });
+
+  app.get("/factorial.wasm", (_req, res) => {
+    res.sendFile("factorial.wasm", { root: "./wasm" });
+  });
+
   return wss;
 }

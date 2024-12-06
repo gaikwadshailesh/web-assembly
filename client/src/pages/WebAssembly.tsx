@@ -29,11 +29,54 @@ export function WebAssembly() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "/factorial.js";
-    script.onload = () => setWasmLoaded(true);
-    document.body.appendChild(script);
-  }, []);
+    const loadWasm = async () => {
+      try {
+        const script = document.createElement("script");
+        script.src = "/factorial.js";
+        script.async = true;
+        
+        const loadPromise = new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+        });
+
+        document.body.appendChild(script);
+        await loadPromise;
+        
+        // Wait for Module to be initialized
+        await new Promise(resolve => {
+          const checkInterval = setInterval(() => {
+            if (typeof factorial === 'function') {
+              clearInterval(checkInterval);
+              resolve(true);
+            }
+          }, 100);
+        });
+
+        setWasmLoaded(true);
+        toast({
+          title: "WebAssembly Loaded",
+          description: "Factorial calculator is ready to use",
+        });
+      } catch (error) {
+        console.error("Failed to load WebAssembly:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load WebAssembly module",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadWasm();
+    
+    return () => {
+      const script = document.querySelector('script[src="/factorial.js"]');
+      if (script) {
+        document.body.removeChild(script);
+      }
+    };
+  }, [toast]);
 
   const calculateFactorial = () => {
     const n = parseInt(number);
