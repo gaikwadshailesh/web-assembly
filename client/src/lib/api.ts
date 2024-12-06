@@ -9,11 +9,17 @@ export interface GithubUser {
 
 export async function fetchGithubUsers(): Promise<GithubUser[]> {
   try {
-    const response = await fetch("https://api.github.com/users", {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    });
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json'
+    };
+
+    // Add authorization header if token is available
+    const token = import.meta.env.VITE_GITHUB_TOKEN;
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    }
+
+    const response = await fetch("https://api.github.com/users", { headers });
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
