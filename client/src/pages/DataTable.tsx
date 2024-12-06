@@ -32,7 +32,7 @@ export function DataTable() {
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey: ["github-users"],
     queryFn: fetchGithubUsers,
-    refetchInterval: 15000, // Refetch every 15 seconds
+    refetchInterval: 60000, // Refetch every 60 seconds (1 minute)
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     retry: (failureCount, error) => {
@@ -41,9 +41,9 @@ export function DataTable() {
       }
       return failureCount < 3;
     },
-    staleTime: 5000, // Consider data stale after 5 seconds
-    cacheTime: 60000, // Keep data in cache for 1 minute
-    onSuccess: (newData, _, { previousData }) => {
+    staleTime: 30000, // Consider data stale after 30 seconds
+    gcTime: 120000, // Keep data in cache for 2 minutes
+    onSuccess: (newData: GithubUser[], _: unknown, { previousData }: { previousData: GithubUser[] | undefined }) => {
       if (previousData && newData.length !== previousData.length) {
         toast({
           title: "Data Updated",
