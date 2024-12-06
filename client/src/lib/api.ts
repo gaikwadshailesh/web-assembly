@@ -3,7 +3,7 @@ export interface GithubUser {
   login: string;
   avatar_url: string;
   html_url: string;
-  type: string;
+  type: 'User' | 'Organization';
   followers: number;
 }
 

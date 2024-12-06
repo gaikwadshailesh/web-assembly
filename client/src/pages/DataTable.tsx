@@ -30,6 +30,8 @@ export function DataTable() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["github-users"],
     queryFn: fetchGithubUsers,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   const filteredUsers = data?.filter((user) =>
