@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
+import { GithubUser } from "../lib/api";
 import {
   Table,
   TableBody,
@@ -43,22 +44,18 @@ export function DataTable() {
     },
     staleTime: 30000, // Consider data stale after 30 seconds
     gcTime: 120000, // Keep data in cache for 2 minutes
-    onSuccess: (newData: GithubUser[], _: unknown, { previousData }: { previousData: GithubUser[] | undefined }) => {
-      if (previousData && newData.length !== previousData.length) {
-        toast({
-          title: "Data Updated",
-          description: `Found ${newData.length} GitHub users`,
-        });
-      }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error fetching data",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
+    select: (data: GithubUser[]) => data
   });
+
+  // Show toast only when component mounts or when data length changes
+  useEffect(() => {
+    if (data) {
+      toast({
+        title: "Data Updated",
+        description: `Found ${data.length} GitHub users`,
+      });
+    }
+  }, [data?.length, toast]); // Only re-run if data length changes or toast function changes
 
   const prepareChartData = () => {
     if (!data) return { userTypes: [], followerRanges: [] };

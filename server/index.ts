@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 
 (async () => {
   registerRoutes(app);
-  const PORT = 5000;
+  const PORT = 1010;
   const server = createServer(app);
 
   // Error handling middleware
